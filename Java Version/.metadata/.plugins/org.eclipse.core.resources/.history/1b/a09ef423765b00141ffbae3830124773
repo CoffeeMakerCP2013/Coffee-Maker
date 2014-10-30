@@ -1,0 +1,95 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.sql.DriverManager;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Calendar;
+import java.util.Date;
+
+public class LogFrame extends JFrame {
+	JTable table2;
+	private JPanel center;
+	private JTable table;
+
+	public LogFrame() {
+		super("Log");
+		init();
+	}
+
+	private void init() {
+		setResizable(true);
+		setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		JScrollPane panel = new JScrollPane();
+		table2 = new JTable();
+		JTable table3;
+
+		DefaultTableModel m = (DefaultTableModel) table2.getModel();
+		
+		m.setColumnCount(2);
+
+		// this.setLayout(new BorderLayout());
+		this.center = new JPanel();
+		this.center.setLayout(new GridLayout());
+		this.table = new JTable(m);
+		this.table.setGridColor(Color.black);
+		this.table.setCellSelectionEnabled(true);
+		this.center.add(this.table);
+		this.add(new JScrollPane(this.center), BorderLayout.CENTER);
+		this.table.getColumnModel().getColumn(0).setPreferredWidth(100);
+		this.table.getColumnModel().getColumn(1).setPreferredWidth(300);
+		this.table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+panel.setHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_ALWAYS);
+		this.center.setPreferredSize(new Dimension(800, 800));
+		this.pack();
+		this.setVisible(false);
+
+	}
+
+	public void display() {
+		DefaultTableModel m = (DefaultTableModel) table2.getModel();
+		m.setColumnCount(2);
+		int rows = m.getRowCount();
+		for (int i = 0; i < rows; i++)
+			m.removeRow(0);
+		try {
+			Class.forName("java.sql.Driver");
+			Connection con = DriverManager.getConnection(
+					"jdbc:mysql://sql5.freemysqlhosting.net/sql555821",
+					"sql555821", "nD8!cN9*");
+			Statement st = con.createStatement();
+			String query = "select * from LogTable;";
+			ResultSet rs = st.executeQuery(query);
+			while (rs.next()) {
+				String na = rs.getString("Date");
+				String ad = rs.getString("Status");
+
+				m.addRow(new Object[] { na, ad });
+			}
+			rs.close();
+			st.close();
+			con.close();
+		} catch (ClassNotFoundException e) {
+			System.out.println("Some error:" + e);
+		} catch (SQLException e) {
+			System.out.println("Some error:" + e);
+		}
+		this.setVisible(true);
+	}
+
+}

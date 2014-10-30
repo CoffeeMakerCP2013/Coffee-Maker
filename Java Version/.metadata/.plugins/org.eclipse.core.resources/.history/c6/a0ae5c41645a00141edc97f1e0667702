@@ -1,0 +1,40 @@
+package coffeemaker;
+
+
+public abstract class HotWaterSource {
+	private UserInterface ui;
+	private ContainmentVessel cv;
+	protected Boolean isBrewing;
+
+	public HotWaterSource() {
+		isBrewing = false;
+	}
+
+	public void init(UserInterface ui, ContainmentVessel cv) {
+		this.ui = ui;
+		this.cv = cv;
+	}
+
+	public void start() {
+		isBrewing = true;
+		StartBrewing();
+	}
+
+	public void Done() {
+		isBrewing = false;
+	}
+
+	protected void DeclareDone() {
+		ui.Done();
+		cv.done();
+		isBrewing = false;
+	}
+
+	public abstract Boolean IsReady();
+
+	public abstract void StartBrewing();
+
+	public abstract void Pause();
+
+	public abstract void Resume();
+}

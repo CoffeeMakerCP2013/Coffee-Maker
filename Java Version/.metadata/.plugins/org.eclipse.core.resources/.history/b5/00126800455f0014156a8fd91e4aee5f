@@ -1,0 +1,253 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.awt.Image;
+
+import javax.imageio.ImageIO;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+import java.awt.GridLayout;
+import javax.swing.JButton;
+import javax.swing.JRadioButton;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
+import java.awt.Font;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import java.awt.Canvas;
+import java.awt.Component;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+
+import javax.swing.Box;
+
+import m4coffeemaker.M4CoffeeMakerAPI;
+import model.CoffeeMachineStates.BoilerState;
+import model.CoffeeMachineStates.BoilerStatus;
+import model.CoffeeMachineStates.IndicatorState;
+import model.CoffeeMachineStates.ReliefValveState;
+import model.CoffeeMachineStates.WarmerPlateStatus;
+import model.CoffeeMachineStates.WarmerState;
+import javax.swing.JCheckBox;
+import javax.swing.BoxLayout;
+import java.awt.FlowLayout;
+import java.io.File;
+import java.io.IOException;
+
+public class Frame extends JFrame implements ComponentListener{
+
+	private JPanel contentPane;
+	JPanel controlPanel;
+	JRadioButton valveStatusLight;
+	JRadioButton boilerStatusLight;
+	JRadioButton warmerStatusLight;
+	JCheckBox indicatorStatusLight;
+	JCheckBox machineStatusLight;
+
+	JButton addFullPotBtn;
+	JButton addEmptyPotBtn;
+	JButton removePotBtn;
+	JButton emptyWaterBtn;
+	JButton fillWaterBtn;
+	JButton brewBtn;
+	JButton onBtn;
+	JButton offBtn;
+	M4CoffeeMakerAPI api;
+	MachineImage centreImage;
+	JComboBox warmerPlateOverride;
+	JComboBox boilerOverride;
+	JButton checkLogBtn;
+
+	public Frame(M4CoffeeMakerAPI api) {
+		super("Coffee Maker");
+		this.api = api;
+
+
+	}
+
+	private void setupGUI() {
+
+
+		
+		setResizable(true);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 1500, 900);
+
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+
+		controlPanel = new JPanel();
+		controlPanel.setBounds((int) (this.getWidth() / 1.41), (int) (this.getHeight() / 10.9375), (int) (this.getWidth() / 3.636), (int) (this.getHeight() / 1.23));
+		contentPane.add(controlPanel);
+		controlPanel.setLayout(new GridLayout(4, 3, 0, 0));
+
+		JPanel potControlPanel = new JPanel();
+		controlPanel.add(potControlPanel);
+
+		addFullPotBtn = new JButton("Fill Pot");
+		potControlPanel.add(addFullPotBtn);
+
+		addEmptyPotBtn = new JButton("Empty Pot");
+		potControlPanel.add(addEmptyPotBtn);
+
+		removePotBtn = new JButton("Remove Pot");
+		potControlPanel.add(removePotBtn);
+
+		JPanel waterControlPanel = new JPanel();
+		controlPanel.add(waterControlPanel);
+
+		emptyWaterBtn = new JButton("Empty Water Container");
+		waterControlPanel.add(emptyWaterBtn);
+
+		fillWaterBtn = new JButton("Fill Water Container");
+		waterControlPanel.add(fillWaterBtn);
+
+		JPanel brewPanel = new JPanel();
+		controlPanel.add(brewPanel);
+
+		brewBtn = new JButton("Brew");
+		brewPanel.add(brewBtn);
+
+		JPanel powerPanel = new JPanel();
+		controlPanel.add(powerPanel);
+
+		onBtn = new JButton("On");
+		powerPanel.add(onBtn);
+
+		offBtn = new JButton("Off");
+		powerPanel.add(offBtn);
+
+		JPanel statusPanel = new JPanel();
+		statusPanel.setBounds((int) (this.getWidth() / 200),  (int) (this.getHeight() / 10.9375), (int) (this.getWidth() / 3.636), (int) (this.getHeight() / 1.23));
+		contentPane.add(statusPanel);
+		statusPanel.setLayout(new GridLayout(2, 3, 0, 0));
+
+		JPanel sensorsPanel = new JPanel();
+		statusPanel.add(sensorsPanel);
+		sensorsPanel.setLayout(new GridLayout(0, 1, 0, 0));
+
+		JLabel sensorLabel = new JLabel("Sensor Override");
+		sensorLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
+		sensorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		sensorsPanel.add(sensorLabel);
+
+		JLabel warmerPlateLabel = new JLabel("Warmer Plate Sensor");
+		sensorsPanel.add(warmerPlateLabel);
+
+		warmerPlateOverride = new JComboBox();
+		warmerPlateOverride.setModel(new DefaultComboBoxModel(new String[] {
+				"Automatic", "Pot Missing", "Pot Empty", "Pot Not Empty" }));
+		warmerPlateOverride.setSelectedIndex(0);
+		sensorsPanel.add(warmerPlateOverride);
+
+		JLabel boilerSensorLabel = new JLabel("Boiler Sensor");
+		sensorsPanel.add(boilerSensorLabel);
+
+		boilerOverride = new JComboBox();
+		boilerOverride.setModel(new DefaultComboBoxModel(new String[] {
+				"Automatic", "Boiler Empty", "Boiler Not Empty" }));
+		boilerOverride.setSelectedIndex(0);
+		sensorsPanel.add(boilerOverride);
+
+		JPanel lightsPanel = new JPanel();
+		statusPanel.add(lightsPanel);
+		lightsPanel.setLayout(new GridLayout(4, 1, 0, 0));
+
+		JLabel lightsLabel = new JLabel("Status Lights");
+		lightsLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
+		lightsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		lightsPanel.add(lightsLabel);
+
+		boilerStatusLight = new JRadioButton("Boiler Status");
+		boilerStatusLight.setEnabled(false);
+		lightsPanel.add(boilerStatusLight);
+
+		valveStatusLight = new JRadioButton("Valve Status");
+		valveStatusLight.setEnabled(false);
+		lightsPanel.add(valveStatusLight);
+
+		warmerStatusLight = new JRadioButton("Warmer Status");
+		warmerStatusLight.setEnabled(false);
+		lightsPanel.add(warmerStatusLight);
+
+		JPanel bottomPanel = new JPanel();
+
+		bottomPanel.setBounds((int) (this.getWidth() / 200),  634, 984, 33);
+		contentPane.add(bottomPanel);
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 150, 5));
+
+		indicatorStatusLight = new JCheckBox("Indicator State (Coffee Ready)");
+		indicatorStatusLight.setHorizontalAlignment(SwingConstants.LEFT);
+		bottomPanel.add(indicatorStatusLight);
+
+		checkLogBtn = new JButton("Check Log");
+		bottomPanel.add(checkLogBtn);
+
+		machineStatusLight = new JCheckBox("Machine on");
+		bottomPanel.add(machineStatusLight);
+
+		JPanel titlePanel = new JPanel();
+
+		titlePanel.setBounds((int) (this.getWidth() / 200), (int) (this.getHeight() / 140), (int) (this.getWidth() / 1.01626), (int) (this.getHeight() / 11.8644));
+		contentPane.add(titlePanel);
+
+		JLabel titleLabel = new JLabel("Coffee Machine");
+		titleLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
+		titlePanel.add(titleLabel);
+
+		JPanel centreImagePanel = new JPanel();
+		centreImagePanel.setBounds((int) (this.getWidth() / 3.44827), (int) (this.getHeight() / 3.139), (int) (this.getWidth() / 2.44499), (int) (this.getHeight() / 1.75));
+		contentPane.add(centreImagePanel);
+
+		centreImage = new MachineImage();
+		// centreImagePanel.setLayout(new FlowLayout());
+		centreImagePanel.add(centreImage);
+		setVisible(true);
+		//setBounds((int) (this.getWidth() / 1.41), (int) (this.getHeight() / 10.9375), (int) (this.getWidth() / 3.636), (int) (this.getHeight() / 1.23))
+
+		bottomPanel.setBounds((int) (this.getWidth() / 200),  (int) (this.getHeight() / 1.12), (int) (this.getWidth() / 1.01626), (int) (this.getHeight() / 21.212121));
+		contentPane.add(bottomPanel);
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 150, 5));
+
+	}
+
+	public void updateDisplay(BoilerStatus b, WarmerPlateStatus w) {
+		// Update all elements on the GUI display
+		valveStatusLight.setSelected(ReliefValveState.OPEN == api
+				.getReliefValveState());
+		boilerStatusLight.setSelected(BoilerState.ON == api.getBoilerState());
+		warmerStatusLight.setSelected(WarmerState.ON == api.getWarmerState());
+		indicatorStatusLight.setSelected(IndicatorState.ON == api
+				.getIndicatorState());
+		machineStatusLight.setSelected(api.getCoffeeMachineState());
+		centreImage.updateImage(b, w);
+
+	}
+
+	public String getWarmerPlateOverrideSelection() {
+		return warmerPlateOverride.getSelectedItem().toString();
+
+	}
+
+	public String getBoilerOverrideSelection() {
+		return boilerOverride.getSelectedItem().toString();
+	}
+
+	public void addListeners(ActionListener l) {
+		addFullPotBtn.addActionListener(l);
+		addEmptyPotBtn.addActionListener(l);
+		removePotBtn.addActionListener(l);
+		brewBtn.addActionListener(l);
+		checkLogBtn.addActionListener(l);
+		emptyWaterBtn.addActionListener(l);
+		fillWaterBtn.addActionListener(l);
+		onBtn.addActionListener(l);
+		offBtn.addActionListener(l);
+
+	}
+}

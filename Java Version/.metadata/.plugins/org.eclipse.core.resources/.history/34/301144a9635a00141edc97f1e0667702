@@ -1,0 +1,165 @@
+package m4coffeemaker;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import model.CoffeeMachineStates.*;
+import view.Frame;
+
+public class CoffeeMaker implements ActionListener {
+	static CoffeeMaker coffeeMaker;
+	static Frame frame;
+	static M4CoffeeMakerAPI api;
+	static M4UserInterface ui;
+	static M4HotWaterSource hws;
+	static M4ContainmentVessel cv;
+	static LogWriter logWriter;
+	static BoilerStatus physicalBoilerStatus;
+	static WarmerPlateStatus phycialWarmerPlateStatus;
+
+	public static void main(String[] args) {
+		coffeeMaker = new CoffeeMaker();
+
+		api = new M4CoffeeMakerAPI();
+		ui = new M4UserInterface(api);
+		hws = new M4HotWaterSource(api);
+		cv = new M4ContainmentVessel(api);
+
+		physicalBoilerStatus = api.getBoilerStatus();
+		phycialWarmerPlateStatus = api.getWarmerPlateStatus();
+
+		frame = new Frame(api);
+		frame.addListeners(coffeeMaker);
+
+		ui.init(hws, cv);
+		hws.init(ui, cv);
+		cv.Init(ui, hws);
+
+		// Need to keep track of each machine state, and print the changes to
+		// the log each iteration
+		
+		logWriter = new LogWriter(api);
+		logWriter.setupConnection();
+
+		while (true) {
+			if (api.getCoffeeMachineState()) {
+
+				// Save current state of everything
+
+				// Handle sensor overrides
+				switch (frame.getWarmerPlateOverrideSelection()) {
+				case "Pot Missing":
+					api.SetWarmerPlateStatus(WarmerPlateStatus.WARMER_EMPTY);
+					break;
+
+				case "Pot Empty":
+					api.SetWarmerPlateStatus(WarmerPlateStatus.POT_EMPTY);
+					break;
+				case "Pot Not Empty":
+					api.SetWarmerPlateStatus(WarmerPlateStatus.POT_NOT_EMPTY);
+					break;
+				case "Automatic":
+					api.SetWarmerPlateStatus(phycialWarmerPlateStatus);
+					break;
+				}
+
+				switch (frame.getBoilerOverrideSelection()) {
+				case "Boiler Empty":
+					api.SetBoilerStatus(BoilerStatus.EMPTY);
+					break;
+
+				case "Boiler Not Empty":
+					api.SetBoilerStatus(BoilerStatus.NOT_EMPTY);
+					break;
+				case "Automatic":
+					api.SetBoilerStatus(physicalBoilerStatus);
+					break;
+				}
+
+				// Save any changes to log
+				try {
+					logWriter.updateLog();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				ui.Poll();
+
+				// Save any changes to log
+				try {
+					logWriter.updateLog();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				hws.Poll();
+
+				// Save any changes to log
+				try {
+					logWriter.updateLog();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				cv.Poll();
+
+				// Save any changes to log
+				try {
+					logWriter.updateLog();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+			}
+			frame.updateDisplay(physicalBoilerStatus, phycialWarmerPlateStatus);
+
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		switch (e.getActionCommand()) {
+		case "Fill Pot":
+			phycialWarmerPlateStatus = WarmerPlateStatus.POT_NOT_EMPTY;
+			break;
+
+		case "Empty Pot":
+			phycialWarmerPlateStatus = WarmerPlateStatus.POT_EMPTY;
+			break;
+
+		case "Remove Pot":
+			phycialWarmerPlateStatus = WarmerPlateStatus.WARMER_EMPTY;
+			break;
+
+		case "Empty Water Container":
+			physicalBoilerStatus = BoilerStatus.EMPTY;
+			break;
+
+		case "Fill Water Container":
+			physicalBoilerStatus = BoilerStatus.NOT_EMPTY;
+			break;
+		case "Brew":
+			if (api.getCoffeeMachineState()) // if the machine is on
+				api.SetBrewButtonStatus(BrewButtonStatus.PUSHED);
+			break;
+		case "On":
+			api.turnOn();
+			break;
+		case "Off":
+			api.turnOff();
+			break;
+
+		}
+		// Save any changes to log
+		try {
+			logWriter.updateLog();
+		} catch (Exception ex) {
+			// TODO Auto-generated catch block
+			ex.printStackTrace();
+		}
+
+	}
+}

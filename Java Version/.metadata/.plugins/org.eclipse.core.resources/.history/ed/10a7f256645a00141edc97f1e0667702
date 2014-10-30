@@ -1,0 +1,33 @@
+package coffeemaker;
+
+public abstract class UserInterface {
+	private HotWaterSource hws;
+	private ContainmentVessel cv;
+	protected Boolean isComplete;
+
+	public UserInterface() {
+		isComplete = true;
+	}
+
+	public void init(HotWaterSource hws, ContainmentVessel cv) {
+		this.hws = hws;
+		this.cv = cv;
+	}
+
+	public void Complete() {
+		isComplete = true;
+		CompleteCycle();
+	}
+
+	protected void StartBrewing() {
+		if (hws.isReady() && cv.isReady()) {
+			isComplete = false;
+			hws.start();
+			cv.start();
+		}
+	}
+
+	public abstract void Done();
+
+	public abstract void CompleteCycle();
+}

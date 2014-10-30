@@ -1,0 +1,84 @@
+package view;
+
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import model.CoffeeMachineStates.BoilerStatus;
+import model.CoffeeMachineStates.WarmerPlateStatus;
+
+public class MachineImage extends JPanel {
+
+
+	BufferedImage image;
+
+	public MachineImage() {
+
+		setPreferredSize(new Dimension(409, 400));
+		setBackground(Color.BLACK);
+	}
+
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		// Load required image
+		g.drawImage(image, 0, 0, null);
+
+	}
+
+	public void updateImage(BoilerStatus b, WarmerPlateStatus w) {
+
+		try {
+
+			if (b == BoilerStatus.EMPTY) {
+
+				switch (w) {
+				case WARMER_EMPTY:
+					image = ImageIO
+							.read(MachineImage.class.getResourceAsStream("resources/Water_Empty_Pot_Missing.jpg"));
+					break;
+				case POT_EMPTY:
+					image = ImageIO.read(MachineImage.class.getResourceAsStream("resources/Water_Empty_Pot_Empty.jpg"));
+					break;
+
+				case POT_NOT_EMPTY:
+					image = ImageIO.read(MachineImage.class.getResourceAsStream("resources/Water_Empty_Pot_Full.jpg"));
+					break;
+				}
+
+			} else {
+				switch (w) {
+				case WARMER_EMPTY:
+					image = ImageIO
+							.read(MachineImage.class.getResourceAsStream("resources/Water_Full_Pot_Missing.jpg"));
+					break;
+				case POT_EMPTY:
+					image = ImageIO.read(new File("src/images/Water_Full_Pot_Empty.jpg"));
+					break;
+				case POT_NOT_EMPTY:
+					image = ImageIO.read(new File("src/images/Water_Full_Pot_Full.jpg"));
+					break;
+				}
+			}
+
+		} catch (Exception e) {
+			System.out.println("image not found");
+		}
+
+		repaint();
+
+	}
+
+}

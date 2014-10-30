@@ -1,0 +1,125 @@
+package view;
+
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import m4coffeemaker.M4CoffeeMakerAPI;
+import m4coffeemaker.M4ContainmentVessel;
+import m4coffeemaker.M4HotWaterSource;
+import m4coffeemaker.M4UserInterface;
+import model.BoilerState;
+import model.ReliefValveState;
+import model.WarmerState;
+
+public class Frame {
+	JPanel buttonPanel;
+	JPanel sensorPanel;
+	JPanel statusPanel;
+	JFrame mainFrame;
+
+	JButton addFullPot;
+	JButton addEmptyPot;
+	JButton removePot;
+
+	JButton emptyWater;
+	JButton fillWater;
+
+	JButton brew;
+
+	JButton onButton;
+	JButton offButton;
+
+	JCheckBox valveStatus;
+	JCheckBox boilerStatus;
+	JCheckBox warmerStatus;
+
+	M4CoffeeMakerAPI api;
+
+	public Frame(M4CoffeeMakerAPI api) {
+		this.api = api;
+
+		setupGUI();
+
+	}
+
+	private void setupGUI() {
+		// Initially set up the GUI
+
+		mainFrame = new JFrame("Coffee Maker");
+		mainFrame.setLayout(new GridLayout(2, 2));
+		sensorPanel = new JPanel(new GridLayout(4, 3));
+		statusPanel = new JPanel(new FlowLayout());
+		buttonPanel = new JPanel(new GridLayout(4, 3));
+
+		addFullPot = new JButton("Add Full Pot");
+		addEmptyPot = new JButton("Add Empty Pot");
+		removePot = new JButton("Remove Pot");
+
+		emptyWater = new JButton("Empty Water Container");
+		fillWater = new JButton("Fill Water Container");
+
+		brew = new JButton("Brew");
+
+		onButton = new JButton("ON");
+		offButton = new JButton("OFF");
+
+		buttonPanel.add(addFullPot);
+		buttonPanel.add(addEmptyPot);
+		buttonPanel.add(removePot);
+		buttonPanel.add(emptyWater);
+		buttonPanel.add(fillWater);
+		buttonPanel.add(brew);
+		buttonPanel.add(onButton);
+		buttonPanel.add(offButton);
+
+		boilerStatus = new JCheckBox("Boiler Status");
+		boilerStatus.setSelected(false);
+		boilerStatus.setEnabled(false);
+
+		statusPanel.add(boilerStatus);
+
+		warmerStatus = new JCheckBox("Warmer Status");
+		warmerStatus.setSelected(false);
+		warmerStatus.setEnabled(false);
+
+		statusPanel.add(warmerStatus);
+
+		valveStatus = new JCheckBox("Valve Status");
+		valveStatus.setSelected(false);
+		valveStatus.setEnabled(false);
+
+		statusPanel.add(valveStatus);
+
+		mainFrame.add(sensorPanel);
+		mainFrame.add(buttonPanel);
+		mainFrame.add(statusPanel);
+
+		mainFrame.setVisible(true);
+		mainFrame.pack();
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	}
+
+	public void updateDisplay() {
+		// Update all elements on the GUI display
+		valveStatus.setSelected(ReliefValveState.OPEN == api
+				.GetReliefValveState());
+		boilerStatus.setSelected(BoilerState.ON == api.GetBoilerState());
+		warmerStatus.setSelected(WarmerState.ON == api.GetWarmerState());
+	}
+
+	public void addListeners(ActionListener l) {
+		addFullPot.addActionListener(l);
+		addEmptyPot.addActionListener(l);
+		removePot.addActionListener(l);
+		brew.addActionListener(l);
+		emptyWater.addActionListener(l);
+		fillWater.addActionListener(l);
+	}
+}
